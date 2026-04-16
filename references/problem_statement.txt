@@ -1,0 +1,29 @@
+/brainstorming please and create .md file that main problem with error messages are that. Please use `askQuestion` tool to make the problem statement solid especially when you don't understand the detail and put back some detail in this document again. Please use map-reduce mechanism with some known information be stored as artifact to lookup in target .md gradually and the markdown become checkpoint so AI can keep the context up-to-date.
+HARD REQUIREMENTS: Price should always be shown as opaque price (flight+accom price) so failure to do so (e.g showing only accommodation price in a pre-book page) will cause catastrophic partnership and integration impact.
+1. Accommodation has its own error messages that we want to utilize because making our own will be enormously complex. Context: As typical pages in both flight and accommodation is user will enter booking form after selecting inventory, and after filling contact and pax details in booking form, user will be redirected to payment page.
+2. Flight also has its own error message with different structure of implementation with accommodation 
+3. Accommodation has price-related error message with detail that price of that accommodation is returned (old to new)
+4. Flight also has price-related error message with detail that price of flight is returned in error message
+
+
+Context:
+1. Accommodation has demand layer which responsible to show error messages to users although their supply service (usually call Price Engine or PE) is retrieving many kind of errors from different hotel suppliers (3rd party and native)
+2. Implementation of error code mapping from BE demand to client (FE/App) is located at https://borobudur.atlassian.net/wiki/spaces/TD/pages/3814195318/TACM+Error+Code+Mapping+Handling+-+Booking+Form
+3. For initial phase what we're trying to do is to handle message as is with some modifications
+    a. Error message from flight will show first
+    b. Error message from accom will show afterwards
+    c. If error message from flight only has action to go backwards, we will not proceed to show error message from accommodation
+    d. If somehow we get price-related message from flight and/or accommodation, we will not show them but instead we will map them into our own error message that combines the price
+
+
+Problem with 3.d:
+1. However, there's error in accommodation as per stated at https://borobudur.atlassian.net/wiki/spaces/TD/pages/3554510137/TACM+Booking+Form+-+Handling+Rate+Plan+Changes that all of the details from multiple data points changes are combined into single error. (which inside it can contain price changes as well and becomes loop hole where price of accommodation can leak)
+
+Currently the way we think
+1. We need to do some blacklist to price related error message based on identifier
+2. if you can see accom-combined-error-message.png, there's button action id to see changes & continue booking which will trigger changes summary bottom sheet like accom-see-changes-bottomsheet.png
+3. For point number 2, we plan to hide that button (by identifying action id of that button and change to continue booking only) so we can avoid accom price leakage that potentially show in the changes bottom sheet with expectation that user can see the new detail on payment page. But not all details that possibly change is shown in payment page's order summary. Like cancellation policy is not shown there. So if there's any cancelletion policy changes which is supposedly shown by accom in combined error message, will be skipped by user. We think this is bad to UX, while if user choose to go back to previous page (see other rooms), accom has aggressive caching which will still show old data right now. So they rely on this error message actually
+
+
+Task
+1. Create brainstorming session and use `askQuestion` tool to layout solution proposal to handle error messages from flight and accommodation gracefully without reinventing new wheels to handle the errors.
